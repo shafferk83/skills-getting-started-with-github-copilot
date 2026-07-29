@@ -16,7 +16,16 @@ document.addEventListener("DOMContentLoaded", () => {
   // Function to fetch activities from API
   async function fetchActivities() {
     try {
-      const response = await fetch("/activities", { cache: "no-store" });
+      const response = await fetch(`/activities?ts=${Date.now()}`, {
+        cache: "no-store",
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to fetch activities: ${response.status}`);
+      }
       const activities = await response.json();
 
       // Clear loading message
@@ -31,7 +40,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const spotsLeft = details.max_participants - details.participants.length;
         const participantItems = details.participants
           .map((participant) => {
-            const encodedEmail = encodeURIComponent(participant);
             const safeEmail = escapeHtml(participant);
             return `
               <li class="participant-item">
@@ -40,8 +48,8 @@ document.addEventListener("DOMContentLoaded", () => {
                   type="button"
                   class="delete-participant-btn"
                   data-activity="${encodeURIComponent(name)}"
-                  data-email="${encodedEmail}"
-                  aria-label="Unregister ${safeEmail} from ${escapeHtml(name)}"
+                  data-email="${encodeURIComponent(participant)}"
+                  aria-label="Unregister ${safeEmail}"
                   title="Unregister participant"
                 >
                   &#128465;
